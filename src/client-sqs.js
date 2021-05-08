@@ -1,35 +1,41 @@
 const AWS = require('aws-sdk');
 
+const { AWS_QUEUE_URL, AWS_REGION } = process.env;
 module.exports = class ClientSQS {
-  constructor({ queueUrl, region } = {}) {
-    this.init({ region });
+  constructor() {
+    this.init(AWS_REGION);
     this.config = {
-      queueUrl,
+      QueueUrl: AWS_QUEUE_URL
     };
     this.sqs = new AWS.SQS();
   }
 
-  init({ region }) {
+  static getInstance() {
+    if(!this.instance) this.instance = new ClientSQS();
+    return this.instance;
+  }
+
+  init(region) {
     AWS.config.update({ region });
   }
 
   async sendMessage(message = 'empty') {
     return this.sqs.sendMessage({
-      QueueUrl: this.config.queueUrl,
+      ...this.config,
       MessageBody: JSON.stringify(message),
     }).promise();
   }
 
   async receiveMessage() {
     return this.sqs.receiveMessage({
-      QueueUrl: this.config.queueUrl,
+      ...this.config,
       WaitTimeSeconds: 20
     }).promise();
   }
 
   async deleteMessage(message) {
     return this.sqs.deleteMessage({
-      QueueUrl: this.config.queueUrl,
+      ...this.config,
       ReceiptHandle: message.Messages[0].ReceiptHandle
     }).promise();
   }

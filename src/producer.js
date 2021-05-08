@@ -2,10 +2,7 @@
   require('dotenv').config();
   const ClientSQS = require('./client-sqs');
 
-  const SQS = new ClientSQS({
-    queueUrl: process.env.AWS_QUEUE_URL,
-    region: process.env.AWS_REGION
-  });
+  const SQS = ClientSQS.getInstance();
 
   try {
     await SQS.sendMessage({
